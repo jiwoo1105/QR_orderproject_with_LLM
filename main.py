@@ -80,22 +80,61 @@ async def chat(request: ChatRequest):
     - **context**: 메뉴, 운영시간 등 추가 정보 (선택)
     """
     try:
-        # 대화 히스토리를 딕셔너리 리스트로 변환
+        # 대화 히스토리 변환 (Spring Boot 형식 또는 기존 형식 모두 지원)
         history = None
-        if request.conversation_history:
+
+        # previousMessages (Spring Boot) 또는 conversation_history 사용
+        messages = request.previousMessages or request.conversation_history
+
+        if messages:
             history = [
-                {"role": msg.role, "content": msg.content}
-                for msg in request.conversation_history
+                {
+                    "role": msg.role.lower() if hasattr(msg.role, 'lower') else msg.role,
+                    "content": msg.content
+                }
+                for msg in messages
             ]
+
+        # 컨텍스트 구성 (Spring Boot 형식 변환)
+        context = request.context or {}
+
+        # Spring Boot에서 menus를 직접 보낸 경우
+        if request.menus:
+            # Spring Boot 메뉴 형식을 우리 형식으로 변환
+            formatted_menus = []
+            for menu in request.menus:
+                formatted_menu = {
+                    "name": menu.get("name"),
+                    "price": menu.get("price"),
+                    "restaurant": menu.get("restaurantName"),
+                }
+
+                # 영양 정보 추가
+                if "nutritionInfo" in menu:
+                    nutrition = menu["nutritionInfo"]
+                    formatted_menu["calories"] = nutrition.get("calories")
+                    formatted_menu["protein"] = nutrition.get("protein")
+                    formatted_menu["fat"] = nutrition.get("fat")
+                    formatted_menu["carbs"] = nutrition.get("carbs")
+                    formatted_menu["sodium"] = nutrition.get("sodium")
+
+                # 알레르기 정보 추가
+                if "allergyIngredients" in menu:
+                    formatted_menu["allergens"] = menu["allergyIngredients"]
+
+                formatted_menus.append(formatted_menu)
+
+            context["menus"] = formatted_menus
 
         # 챗봇 호출
         result = chatbot.chat(
             user_message=request.message,
             conversation_history=history,
-            context=request.context
+            context=context
         )
 
-        return ChatResponse(**result)
+        # Spring Boot에게는 메시지만 전달
+        return ChatResponse(message=result["response"])
 
     except Exception as e:
         raise HTTPException(
@@ -143,7 +182,8 @@ async def recommend_menu(request: MenuRecommendationRequest):
             context=context
         )
 
-        return ChatResponse(**result)
+        # Spring Boot에게는 메시지만 전달
+        return ChatResponse(message=result["response"])
 
     except Exception as e:
         raise HTTPException(

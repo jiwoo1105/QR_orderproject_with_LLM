@@ -1,0 +1,45 @@
+# 환경 변수 (보안)
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Security
+*.pem
+*.key
+
+# Archives
+*.tar
+*.tar.gz
+*.zip
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Documentation
+README.md

@@ -11,6 +11,19 @@ class Message(BaseModel):
 class ChatRequest(BaseModel):
     """챗봇 대화 요청 모델"""
     message: str = Field(..., description="사용자 메시지", min_length=1)
+
+    # Spring Boot 형식 지원
+    previousMessages: Optional[List[Message]] = Field(
+        default=None,
+        alias="previousMessages",
+        description="이전 대화 기록 (Spring Boot 형식)"
+    )
+    menus: Optional[List[Dict]] = Field(
+        default=None,
+        description="메뉴 목록 (Spring Boot 형식)"
+    )
+
+    # 기존 형식도 지원 (하위 호환성)
     conversation_history: Optional[List[Message]] = Field(
         default=None,
         description="이전 대화 히스토리"
@@ -48,7 +61,12 @@ class ChatRequest(BaseModel):
 
 
 class ChatResponse(BaseModel):
-    """챗봇 응답 모델"""
+    """챗봇 응답 모델 (Spring Boot용 - 간단 버전)"""
+    message: str = Field(..., description="챗봇 응답 메시지")
+
+
+class DetailedChatResponse(BaseModel):
+    """상세 챗봇 응답 모델 (내부 사용 또는 디버깅용)"""
     response: str = Field(..., description="챗봇 응답 메시지")
     model: str = Field(..., description="사용된 AI 모델명")
     tokens_used: int = Field(..., description="사용된 토큰 수")
