@@ -6,7 +6,6 @@ import uvicorn
 from models import (
     ChatRequest,
     ChatResponse,
-    MenuRecommendationRequest,
     HealthCheckResponse
 )
 from chatbot_service import CafeteriaChatbot
@@ -140,55 +139,6 @@ async def chat(request: ChatRequest):
         raise HTTPException(
             status_code=500,
             detail=f"챗봇 처리 중 오류 발생: {str(e)}"
-        )
-
-
-@app.post("/recommend", response_model=ChatResponse)
-async def recommend_menu(request: MenuRecommendationRequest):
-    """
-    메뉴 추천받기
-
-    사용자의 선호도와 제약사항을 고려하여 메뉴를 추천합니다.
-
-    - **dietary_restrictions**: 식이 제한사항 (예: 채식, 알레르기)
-    - **preferred_cuisine**: 선호 음식 종류
-    - **budget**: 예산
-    - **available_menus**: 현재 이용 가능한 메뉴
-    """
-    try:
-        # 컨텍스트 구성
-        context = {}
-        if request.available_menus:
-            context["menus"] = request.available_menus
-
-        # 추천 메시지 생성
-        prompt_parts = ["메뉴를 추천해주세요."]
-
-        if request.dietary_restrictions:
-            restrictions = ", ".join(request.dietary_restrictions)
-            prompt_parts.append(f"식이 제한사항: {restrictions}")
-
-        if request.preferred_cuisine:
-            prompt_parts.append(f"선호 음식: {request.preferred_cuisine}")
-
-        if request.budget:
-            prompt_parts.append(f"예산: {request.budget}원 이하")
-
-        recommendation_message = " ".join(prompt_parts)
-
-        # 챗봇 호출
-        result = chatbot.chat(
-            user_message=recommendation_message,
-            context=context
-        )
-
-        # Spring Boot에게는 메시지만 전달
-        return ChatResponse(message=result["response"])
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=500,
-            detail=f"메뉴 추천 중 오류 발생: {str(e)}"
         )
 
 

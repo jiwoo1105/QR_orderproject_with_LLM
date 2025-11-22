@@ -18,7 +18,7 @@ class CafeteriaChatbot:
 당신은 대학교 학생식당 관리 시스템의 친절한 AI 어시스턴트입니다.
 
 역할:
-- 학생식당의 메뉴, 영양정보, 운영시간 등에 대해 안내합니다
+- 학생식당의 메뉴, 영양정보 등에 대해 안내합니다
 - 사용자의 질문에 정확하고 친절하게 답변합니다
 - 메뉴 추천, 식단 정보, 알레르기 정보 관련 도움을 제공합니다
 
@@ -99,10 +99,30 @@ class CafeteriaChatbot:
             formatted.append("=== 오늘의 메뉴 ===")
             for menu in context["menus"]:
                 menu_info = f"- {menu.get('name', 'N/A')}"
+
+                # 가격 정보
                 if "price" in menu:
                     menu_info += f" ({menu['price']}원)"
+
+                # 영양 정보
+                nutrition_parts = []
                 if "calories" in menu:
-                    menu_info += f" | {menu['calories']}kcal"
+                    nutrition_parts.append(f"{menu['calories']}kcal")
+                if "protein" in menu:
+                    nutrition_parts.append(f"단백질 {menu['protein']}g")
+                if "carbs" in menu:
+                    nutrition_parts.append(f"탄수화물 {menu['carbs']}g")
+                if "fat" in menu:
+                    nutrition_parts.append(f"지방 {menu['fat']}g")
+
+                if nutrition_parts:
+                    menu_info += f" | {', '.join(nutrition_parts)}"
+
+                # 알레르기 정보
+                if "allergens" in menu and menu["allergens"]:
+                    allergens_str = ", ".join(menu["allergens"])
+                    menu_info += f" | 알레르기: {allergens_str}"
+
                 formatted.append(menu_info)
 
         if "operating_hours" in context:
